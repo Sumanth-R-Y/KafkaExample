@@ -1,0 +1,80 @@
+---
+version: '3'
+networks:
+  kafka-cluster:
+    name: kafka-cluster
+    driver: bridge
+
+services:
+  zookeeperA:
+    image: confluentinc/cp-zookeeper:6.2.0
+    container_name: zookeeperA
+    hostname: zookeeperA 
+    environment:
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000  
+      ZOOKEEPER_SERVERS: "zookeeperA:2888:3888;zookeeperB:2888:3888"
+    ports:
+      - "12181:2181"
+    networks:
+      - kafka-cluster
+    
+
+  zookeeperB:
+    image: confluentinc/cp-zookeeper:6.2.0
+    container_name: zookeeperB
+    hostname: zookeeperB
+    environment:
+      ZOOKEEPER_SERVER_ID: 2
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_SERVERS: "zookeeperA:2888:3888;zookeeperB:2888:3888"
+    ports:
+      - "22181:2181"  
+    networks:
+      - kafka-cluster
+
+  brokerA:
+    image: confluentinc/cp-kafka:6.2.0
+    container_name: brokerA
+    hostname: brokerA
+    ports:
+    # To learn about configuring Kafka for access across networks see
+    # https://www.confluent.io/blog/kafka-client-cannot-connect-to-broker-on-aws-on-docker-etc/
+      - "19092:19092"
+    depends_on:
+      - zookeeperA
+      - zookeeperB
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeperA:2181,zookeeperB:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT_HOST:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT_HOST://ipaddress_or_hostname_of_host_on_which_docker_is_running:19092,PLAINTEXT://brokerA:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    networks:
+      - kafka-cluster
+
+  brokerB:
+    image: confluentinc/cp-kafka:6.2.0
+    container_name: brokerB
+    hostname: borkerB
+    ports:
+    # To learn about configuring Kafka for access across networks see
+    # https://www.confluent.io/blog/kafka-client-cannot-connect-to-broker-on-aws-on-docker-etc/
+      - "29092:29092"
+    depends_on:
+      - zookeeperA
+      - zookeeperB
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: 'zookeeperB:2181,zookeeperA:2181'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT_HOST:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT_HOST://ipaddress_or_hostname_of_host_on_which_docker_is_running:29092,PLAINTEXT://brokerB:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    networks:
+      - kafka-cluster
