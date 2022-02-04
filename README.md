@@ -1,4 +1,4 @@
-# Kafka Working Example using Docker Container
+# Kafka Working Example using Docker Container (on a Linux Host)
 ## Pre-requisites :
 Docker Engine and Docker-Compose should be installed.
 
