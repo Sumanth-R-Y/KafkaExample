@@ -1,8 +1,8 @@
-# Kafka Working Example using Docker Container (on a Linux Host)
-## Pre-requisites :
+# Kafka and Flink on using Docker Containers (on a Linux Host)
+### Pre-requisites :
 Docker Engine and Docker-Compose should be installed.
 
-## Important References:
+### Important References:
 
 1. To understand the ***docker-compose.yml*** - especially environment variables specific to ZOOKEEPER and KAFKA
 
