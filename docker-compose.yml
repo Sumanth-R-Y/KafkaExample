@@ -78,3 +78,31 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
     networks:
       - kafka-cluster
+      
+  jobmanager:
+    image: flink:latest
+    container_name: flinkJobManager
+    ports:
+      - "8081:8081"
+    command: jobmanager
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager   
+    networks:
+      - kafka-cluster     
+
+  taskmanager:
+    image: flink:latest
+    container_name: flinkTaskManager
+    depends_on:
+      - jobmanager
+    command: taskmanager
+    scale: 1
+    environment:
+      - |
+        FLINK_PROPERTIES=
+        jobmanager.rpc.address: jobmanager
+        taskmanager.numberOfTaskSlots: 2   
+    networks:
+      - kafka-cluster
